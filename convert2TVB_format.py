@@ -283,8 +283,9 @@ bem = mne.make_bem_solution(model)
 # This may produce implausible results if not corrected. 
 # Default locations are used here to completely automize the pipeline and to not require manual input (e.g. setting the fiducials and fitting EEG locations.)
 # read default cap
-mon = mne.channels.read_montage(kind="biosemi64", unit='auto', transform=True)
+#mon = mne.channels.read_montage(kind="biosemi64", unit='auto', transform=True) # DEPRECATED
 #mon = mne.channels.read_montage(kind="easycap-M1", unit='auto', transform=False)
+mon = mne.channels.make_standard_montage(kind="biosemi64", head_size=0.095) #default brain radius used
 
 # create info object
 ch_type = ["eeg" for i in range(len(mon.ch_names))]
