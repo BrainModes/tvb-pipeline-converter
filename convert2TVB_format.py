@@ -53,7 +53,7 @@ pipeline_name      = "TVB"
 
 #%%
 # =============================================================================
-# create cortical surface and region mapping
+# create cortical surface and region mapping 
 # =============================================================================
 
 # read surface, and convert units of the vertex positions
@@ -72,8 +72,8 @@ pial_tris      = np.concatenate((pial_l[3]['tris'], pial_r[3]['tris'] +  n_vert_
 # for surface parcellations (i.e. desikan, destrieux, hcpmmp1) use the annot files from freesurfer to get the region mapping
 # for volumetric parcellations use the label.gii files created with wb_command
 if parcellation in ["desikan", "destrieux", "hcpmmp1"]: # i.e. surface parcellations
-
-    # mrtrix lut, connectome ordering !!!!!
+    
+    # mrtrix lut, connectome ordering !!!!! 
     if parcellation == "desikan":
         parc="aparc"
         mrtrix_lut    = np.genfromtxt(mrtrix_output_dir+"/parc-desikan_lookup.txt", skip_header=4, dtype="str")
@@ -82,8 +82,8 @@ if parcellation in ["desikan", "destrieux", "hcpmmp1"]: # i.e. surface parcellat
         cortical = [ 1 if name[:3]=="ctx" else 0 for name in region_names ]
         hemisphere    = [ 1 if name[4:6] == "rh" or name[0:5] == "Right" else 0 for name in region_names] # 1 = right hemisphere, 0 = left hemisphere
         regexp_append=""
-
-    elif parcellation =="destrieux":
+        
+    elif parcellation =="destrieux": 
         parc="aparc.a2009s"
         mrtrix_lut    = np.genfromtxt(mrtrix_output_dir+"/parc-destrieux_lookup.txt", skip_header=4, dtype="str")
         region_names  = mrtrix_lut[:,1]
@@ -92,8 +92,8 @@ if parcellation in ["desikan", "destrieux", "hcpmmp1"]: # i.e. surface parcellat
         cortical = [ 1 if name[:3]=="ctx" else 0 for name in region_names ]
         hemisphere   = [ 1 if name[4:6] == "rh" or name[0:5] == "Right" else 0 for name in region_names]
         regexp_append=""
-
-    elif parcellation =="hcpmmp1":
+        
+    elif parcellation =="hcpmmp1": 
         parc="HCPMMP1"
         mrtrix_lut    = np.genfromtxt(mrtrix_output_dir+"/parc-hcpmmp1_lookup.txt", skip_header=3, dtype="str")
         region_names  = mrtrix_lut[:,1]
@@ -106,28 +106,28 @@ if parcellation in ["desikan", "destrieux", "hcpmmp1"]: # i.e. surface parcellat
         cortical[:360] = 1
         hemisphere = [ 1 if name[0] == "R" else 0 for name in region_names] # this way brainstem is assigned to left hemisphere
         regexp_append="_ROI"
-
-
+        
+    
     # create region map of high_res pial surface
     region_map = np.zeros((n_vert))
     n_regions = mrtrix_lut.shape[0]
-
+    
     # load labels according to mrtrix lut order !!!
     r = 1
     for i in range(len(region_names)):
         if cortical[i] :  # only cortical regions are represented in the region map
-            if  hemisphere[i] == 1:
+            if  hemisphere[i] == 1: 
                 add  = n_vert_l
                 hemi = "rh"
-            elif hemisphere[i] == 0:
+            elif hemisphere[i] == 0: 
                 add  = 0
                 hemi = 'lh'
-
+                
             label = region_names[i][prefix_len:]+regexp_append
-            label = mne.read_labels_from_annot(subject=recon_all_name, subjects_dir=recon_all_dir, hemi=hemi, regexp ="^"+label, surf_name = 'pial', parc=parc)
+            label = mne.read_labels_from_annot(subject=recon_all_name, subjects_dir=recon_all_dir, hemi=hemi, regexp ="^"+label, surf_name = 'pial', parc=parc) 
             region_map[label[0].vertices + add] = r
         r += 1
-
+    
     # those entries which are still 0 were not labeled
     # they are corresponding to "subcortical" vertices, i.e. on the brain "inside" of the cortical surface
     # delete those from region map and cortical surface vertices and tris
@@ -135,42 +135,42 @@ if parcellation in ["desikan", "destrieux", "hcpmmp1"]: # i.e. surface parcellat
     pial_vertices = np.delete(pial_vertices, ind_sub_vert, 0)
     region_map = region_map[region_map!=0] # remove "subcortical" vertices
     region_map -= 1 # reduce labels by 1, to start from 0 again
-
+    
     # get triangles which contains these "subcorical" vertices
     mask = np.isin(pial_tris, ind_sub_vert)
     rows, cols = np.nonzero(mask)
     rows = np.unique(rows)
-
+    
     # delete tris
     pial_tris = np.delete(pial_tris, rows,0)
-
+    
     # update tri indices
     kk = []
     for i in range(len(ind_sub_vert)):
         ind = ind_sub_vert[i]
         if pial_tris[pial_tris > ind ].sum() == 0: kk.append(ind)
-        pial_tris[pial_tris > ind ] -= 1
+        pial_tris[pial_tris > ind ] -= 1 
         ind_sub_vert -= 1
-
+    
 elif parcellation in ["aal", "aal2", "craddock200", "craddock400", "perry512"]: #i.e. volumetric parcellations
-
+    
     # load label data from gifti files
     gii_r = nib.load(tvb_workdir+"/rh."+parcellation+".pial.label.gii")
     gii_l = nib.load(tvb_workdir+"/lh."+parcellation+".pial.label.gii")
     region_map = np.concatenate((gii_l.darrays[0].data, gii_r.darrays[0].data))
-
+    
     # too identify "subcortical" voxel we still load e.g. desikan annot file and use it as a mask
     region_map_mask = np.zeros((n_vert))
-
+    
     # load label for vertices from any freesurfer annot files
     labels = mne.read_labels_from_annot(subject=recon_all_name, subjects_dir=recon_all_dir, parc="aparc", surf_name = 'pial')
     for label in labels:
-        if  label.hemi == "rh":
+        if  label.hemi == "rh": 
             add  = n_vert_l
-        elif label.hemi == "lh":
+        elif label.hemi == "lh": 
             add  = 0
         region_map_mask[label.vertices + add] = 1
-
+    
     # those entries which are still 0 were not labeled
     # they are corresponding to "subcortical" vertices, i.e. on the brain "inside" of the cortical surface
     # delete those from region map and cortical surface vertices and tris
@@ -178,37 +178,37 @@ elif parcellation in ["aal", "aal2", "craddock200", "craddock400", "perry512"]: 
     pial_vertices = np.delete(pial_vertices, ind_sub_vert, 0)
     region_map    = region_map[region_map_mask!=0] # remove "subcortical" vertices
     region_map -= 1 # reduce labels by 1, to start from 0 again
-
+    
     # get triangles which contains these "subcorical" vertices
     mask = np.isin(pial_tris, ind_sub_vert)
     rows, cols = np.nonzero(mask)
     rows = np.unique(rows)
-
+    
     # delete tris
     pial_tris = np.delete(pial_tris, rows,0)
-
+    
     # update tri indices above ind
     kk = []
     for i in range(len(ind_sub_vert)):
         ind = ind_sub_vert[i]
         if pial_tris[pial_tris > ind ].sum() == 0: kk.append(ind)
-        pial_tris[pial_tris > ind ] -= 1
+        pial_tris[pial_tris > ind ] -= 1 
         ind_sub_vert -= 1
-
-    # mrtrix lut, connectome ordering !!!!!
+    
+    # mrtrix lut, connectome ordering !!!!! 
     if parcellation in ["aal", "aal2"]:
         mrtrix_lut    = np.genfromtxt(mrtrix_output_dir+"/parc-"+parcellation+"_lookup.txt", skip_header=3, dtype="str")
         region_names  = mrtrix_lut[:,2]
         n_regions     = len(region_names)
         hemisphere    = [ 1 if name[-1] == "R" else 0 for name in region_names] # 1 = right hemisphere, 0 = left hemisphere, assigns the Vermis to Left hemisphere
 
-    elif parcellation in ["craddock200", "craddock400", "perry512"]:
+    elif parcellation in ["craddock200", "craddock400", "perry512"]: 
         # These parcellations have no mrtrix_lut and no region names
         # see Craddock et al. 2012 regions are derived from clustering voxels FC pattern
         # Perry A. 2015 regions are derived via subdivision of AAL atlas
-
+        
         # get number of regions by counting unique values in parc_image
-        img = nib.load(parc_image)
+        img = nib.load(parc_image) 
         img_data = img.get_fdata().astype('int')
         n_regions = len(np.unique(img_data)) - 1 # reduce by 1 because of 0 values in image background
         region_names = [str(i) for i in range(n_regions)]
@@ -219,17 +219,17 @@ elif parcellation in ["aal", "aal2", "craddock200", "craddock400", "perry512"]: 
         hemisphere = np.zeros((n_regions))
         index_hemisphere = np.unique(gii_r.darrays[0].data)[1:] -1 # skip the 0 for "subcortical" vertices and remove by 1 because region start counting at 0
         hemisphere[index_hemisphere] = 1
-
+        
     # all labels appearing in region_map correspond to cortical regions
     cortical = np.zeros((n_regions))
     cortical[np.unique(region_map)] = 1
-
-
-
+        
+    
+    
 
 #%%
 # =============================================================================
-# compute source space
+# compute source space 
 # =============================================================================
 # decimate surface
 pial_dec = mne.decimate_surface(pial_vertices, pial_tris, n_triangles=30000)
@@ -265,10 +265,10 @@ src = mne.SourceSpaces([src])
 
 #%%
 # =============================================================================
-# compute BEM model + EEG Locations
+# compute BEM model + EEG Locations 
 # =============================================================================
 
-mne.bem.make_watershed_bem(subject= recon_all_name, subjects_dir = recon_all_dir, overwrite=True)
+mne.bem.make_watershed_bem(subject= recon_all_name, subjects_dir = recon_all_dir, overwrite=True) 
 
 
 conductivity = (0.3, 0.006, 0.3)  # for three layers
@@ -279,13 +279,12 @@ bem = mne.make_bem_solution(model)
 
 
 
-### GET AND ADJUST EEG LOCATIONS FROM DEFAULT CAP !!!!!!
-# This may produce implausible results if not corrected.
+### GET AND ADJUST EEG LOCATIONS FROM DEFAULT CAP !!!!!! 
+# This may produce implausible results if not corrected. 
 # Default locations are used here to completely automize the pipeline and to not require manual input (e.g. setting the fiducials and fitting EEG locations.)
 # read default cap
-#mon = mne.channels.read_montage(kind="biosemi64", unit='auto', transform=True) #DEPRECATED
-#mon = mne.channels.read_montage(kind="easycap-M1", unit='auto', transform=False) #DEPRECATED
-mon = mne.channels.make_standard_montage(kind="biosemi64", head_size=0.095) #default brain radius used
+mon = mne.channels.read_montage(kind="biosemi64", unit='auto', transform=True)
+#mon = mne.channels.read_montage(kind="easycap-M1", unit='auto', transform=False)
 
 # create info object
 ch_type = ["eeg" for i in range(len(mon.ch_names))]
@@ -303,7 +302,7 @@ eegp_loc, eegp_nn = _project_onto_surface(
 for i in range(len(mon.ch_names)):
     info['chs'][i]['loc'][:3] = eegp_loc[i,:]
 
-#%%
+#%% 
 # =============================================================================
 # compute forward solution
 # =============================================================================
@@ -328,15 +327,15 @@ if not rr.shape[0] == fwd_fixed['nsource']:
     for i in range(rr.shape[0]):
         if rr_list[i] not in fwd_rr_list:
             idx_missing.append(i)
-
+    
     # at these positions insert 0 columns
     for i in idx_missing:
         tmp1 = leadfield_new[:,:i]
         tmp2 = leadfield_new[:,i:]
-        leadfield_new = np.concatenate((tmp1,
+        leadfield_new = np.concatenate((tmp1, 
                                         np.zeros(((np.array(ch_type)=="eeg").sum(),1)),
                                         tmp2), axis=1)
-
+    
 
 # write leadfield to file
 sio.savemat(tvb_output+"/sub-"+participant_label+"_EEGProjection.mat", mdict={'ProjectionMatrix':leadfield_new})
@@ -348,7 +347,7 @@ if not os.path.exists(BIDS_eeg_folder):
 np.savetxt(BIDS_eeg_folder+"/sub-"+participant_label+"_desc-eeg_proj.tsv", leadfield_new, delimiter="\t")
 
 
-#%%
+#%% 
 # =============================================================================
 # save files for TVB
 # =============================================================================
@@ -376,7 +375,7 @@ if not os.path.exists(BIDS_anat_folder):
 gii_labeltb = nbg.GiftiLabelTable()
 
 for i in range(len(region_names)):
-    gii_label = nbg.GiftiLabel(key=i,alpha=1,
+    gii_label = nbg.GiftiLabel(key=i,alpha=1, 
                                red   = np.random.uniform(0,1,1)[0],
                                green = np.random.uniform(0,1,1)[0],
                                blue  = np.random.uniform(0,1,1)[0],
@@ -387,7 +386,7 @@ for i in range(len(region_names)):
 darrays = [nbg.GiftiDataArray(region_map_lores.astype("int32"), intent="NIFTI_INTENT_LABEL", datatype=8)]
 gii_image = nbg.GiftiImage(darrays=darrays, labeltable=gii_labeltb)
 nbg.giftiio.write(gii_image, BIDS_anat_folder+"/sub-"+participant_label+"_space-individual_dparc.label.gii")
-
+    
 
 
 # write cortical surface (i.e. source space) to file
@@ -419,7 +418,7 @@ shutil.rmtree(cort_surf_path)
 darrays = [nbg.GiftiDataArray(pial_vert_converted.astype("float32"), intent="NIFTI_INTENT_POINTSET")] + [nbg.GiftiDataArray(pial_complete['tris'].astype("int32"), intent="NIFTI_INTENT_TRIANGLE")]
 gii_image = nbg.GiftiImage(darrays=darrays)
 nbg.giftiio.write(gii_image, BIDS_anat_folder+"/sub-"+participant_label+"_space-individual_pial.surf.gii")
-
+    
 
 
 
@@ -433,19 +432,19 @@ for i in range(len(names)) :
     bem_path = tvb_output+"/sub-"+participant_label+"_"+name+"/"
     if not os.path.exists(bem_path):
         os.makedirs(bem_path)
-
+        
     bem_surf = mne.read_surface(recon_all_dir+"/"+recon_all_name+"/bem/watershed/"+recon_all_name+"_"+name)
     bem_dict = {'rr':bem_surf[0], 'tris':bem_surf[1]}
     bem_complete = mne.surface.complete_surface_info(bem_dict)
-
+    
     bem_vert_converted = affine_xfm.dot(np.concatenate((bem_complete['rr'] ,np.ones((bem_complete['rr'].shape[0],1))), axis=1).T)[:3,:].T
 
-
+    
     # save files
     np.savetxt(bem_path+"triangles.txt", bem_complete['tris'], fmt="%i")
     np.savetxt(bem_path+"vertices.txt", bem_vert_converted, fmt="%f")
     np.savetxt(bem_path+"normals.txt", bem_complete['nn'], fmt="%f")
-
+    
     # zip folder
     shutil.make_archive(bem_path[:-1], 'zip', bem_path)
     shutil.rmtree(bem_path)
@@ -454,7 +453,7 @@ for i in range(len(names)) :
     darrays = [nbg.GiftiDataArray(bem_vert_converted.astype("float32"), intent="NIFTI_INTENT_POINTSET")] + [nbg.GiftiDataArray(bem_complete['tris'].astype("int32"), intent="NIFTI_INTENT_TRIANGLE")]
     gii_image = nbg.GiftiImage(darrays=darrays)
     nbg.giftiio.write(gii_image, BIDS_anat_folder+"/sub-"+participant_label+"_space-individual_" + BIDS_name + ".surf.gii")
-
+    
 
 print("BEM surfaces saved  !")
 
@@ -498,7 +497,7 @@ print("Tracts saved !")
 
 #3. centers
 # create centroids
-img = nib.load(parc_image)
+img = nib.load(parc_image) 
 img_data = img.get_fdata().astype('int')
 
 # get the right coordinate transform to align region centroids with the surfaces
@@ -513,7 +512,7 @@ for i in range(img_data.max()):
     r = rows.mean()
     c = cols.mean()
     s = slices.mean()
-
+    
     center = img.affine.dot(np.array([r,c,s,1]).T)[:3]
     f.write(region_names[i]+" %.6f" %center[0]+" %.6f" %center[1]+" %.6f" %center[2]+"\n")
     f_bids.write(region_names[i]+"\t%.6f" %center[0]+"\t%.6f" %center[1]+"\t%.6f" %center[2]+"\n")
@@ -523,7 +522,7 @@ f_bids.close()
 print("Centers saved !")
 
 # 4 orientation
-# First get all Vertex-Normals corresponding to the Vertices of a Region
+# First get all Vertex-Normals corresponding to the Vertices of a Region 
 # Now compute mean Vector and Normalize the Vector
 # for subcortical regions set [0,0,1]
 orientation = np.zeros((n_regions,3))
@@ -532,7 +531,7 @@ for i in range(n_regions):
     if cortical[i]: # cortical regions
         nn  = pial_complete['nn'][ region_map_lores==i ,:]
         orientation[i,:] = nn.mean(axis=0)/np.linalg.norm(nn.mean(axis=0))
-
+        
     elif not cortical[i]:  # subcortical regions
         # select normal vertices of a region, average and normalize them
         orientation[i,:] = np.array([0,0,1])
@@ -548,27 +547,27 @@ print("Orientations saved !")
 area = np.zeros((n_regions,1))
 for i in range(n_regions):
     if cortical[i]: # cortical regions
-        area[i] = np.sum(region_map_lores==i)
+        area[i] = np.sum(region_map_lores==i) 
 
-    elif not cortical[i]:  # subcortical regions
+    elif not cortical[i]:  # subcortical regions 
         area[i] = 0
-
+    
 np.savetxt(tvb_connectome_path+"area.txt", area, fmt="%f")
 print("Area saved !")
 
 # 6 cortical
-# connectivity cortical/non-cortical region flags; text file containing one boolean value on each line
+# connectivity cortical/non-cortical region flags; text file containing one boolean value on each line 
 # (as 0 or 1 value) being 1 when corresponding region is cortical.
 # due to error in configuring projection matrix in EEG, see monitors.py, class Projection, def config_for_sim
 # this would need to get fixed, otherwise I don't know how to define the cortical variable or the lead field matrix
 # therefor for now declare all regions as cortical
-cortical = np.ones((n_regions,1)).astype('int')
+cortical = np.ones((n_regions,1)).astype('int') 
 np.savetxt(tvb_connectome_path+"cortical.txt", cortical, fmt="%i")
 print("Cortical saved !")
 
 
 # 7 hemisphere
-# text file containing one boolean value on each line
+# text file containing one boolean value on each line 
 # (as 0 or 1 value) being 1 when corresponding region is in the right hemisphere and 0 when in left hemisphere.
 np.savetxt(tvb_connectome_path+"hemisphere.txt", hemisphere, fmt="%i")
 print("Hemisphere saved !")
