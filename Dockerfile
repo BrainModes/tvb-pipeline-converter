@@ -103,6 +103,7 @@ RUN /bin/bash -c "pip install --upgrade pyAesCrypt"
 
 # add scripts
 COPY convert2TVB_format.py /convert2TVB_format.py
+COPY encrypt_results.py /encrypt_results.py
 COPY generateKeys.py /generateKeys.py
 COPY encrypt_secret.py /encrypt_secret.py
 COPY decrypt_data.py /decrypt_data.py
