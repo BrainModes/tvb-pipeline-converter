@@ -95,14 +95,26 @@ ENV PERL5LIB /opt/freesurfer/mni/lib/perl5/5.8.5
 ENV MNI_PERL5LIB /opt/freesurfer/mni/lib/perl5/5.8.5
 
 
+# add toolboxes for data privacy
+RUN /bin/bash -c "pip install --upgrade pip"
+RUN /bin/bash -c "pip install --upgrade pycryptodome"
+RUN /bin/bash -c "pip install --upgrade pyAesCrypt"
+
 
 # add scripts
 COPY convert2TVB_format.py /convert2TVB_format.py
-COPY tvb_converter_pipeline.sh /tvb_converter_pipeline.sh
-RUN chmod 775 /tvb_converter_pipeline.sh
+COPY generateKeys.py /generateKeys.py
+COPY encrypt_secret.py /encrypt_secret.py
+COPY decrypt_data.py /decrypt_data.py
+COPY tvb_converter.sh /tvb_converter.sh
+COPY tvb_image_processing_pipeline.sh /tvb_image_processing_pipeline.sh
+RUN chmod 775 /tvb_converter.sh
+RUN chmod 775 /decrypt_data.py
+RUN chmod 775 /encrypt_secret.py
+RUN chmod 775 /generateKeys.py
 
 # apt cleanup to recover as much space as possible
 RUN apt-get clean && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
 
 
-ENTRYPOINT [ "/tvb_converter_pipeline.sh" ]
+ENTRYPOINT [ "/tvb_converter.sh" ]
