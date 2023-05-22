@@ -1,5 +1,8 @@
 # tvb-pipeline-converter
 Final leg of TVB processing pipeline. Converts outputs from other workflows into TVB and BIDS format.
+Please see the [TVB PIPELINE EBRAINS Collab](https://wiki.ebrains.eu/bin/view/Collabs/tvb-pipeline/) for further reference on how to run the containerized converter on a Fenix site.
+
+To run the converter locally without containerization, the [convert2TVB_format.py](https://github.com/BrainModes/tvb-pipeline-converter/blob/master/convert2TVB_format.py) Python script can be used directly.
 
 # References
 Schirner, M., Domide, L., Perdikis, D., Triebkorn, P., Stefanovski, L., Pai, R., ... & Ritter, P. (2022). Brain simulation as a cloud service: The Virtual Brain on EBRAINS. NeuroImage, 118973.
