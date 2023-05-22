@@ -1,6 +1,6 @@
 # tvb-pipeline-converter
 Final leg of TVB processing pipeline. Converts outputs from other workflows into TVB and BIDS format.
-Please see the [TVB PIPELINE EBRAINS Collab](https://wiki.ebrains.eu/bin/view/Collabs/tvb-pipeline/) for further reference on how to run the containerized converter on a Fenix site.
+Please see the [TVB PIPELINE EBRAINS Collab](https://wiki.ebrains.eu/bin/view/Collabs/tvb-pipeline/) for further reference on how to run the containerized converter on a Fenix site and the starter script [pipeline.sh](https://github.com/BrainModes/tvb-pipeline-converter/blob/master/pipeline.sh) for the call signature of the container.
 
 To run the converter locally without containerization, the [convert2TVB_format.py](https://github.com/BrainModes/tvb-pipeline-converter/blob/master/convert2TVB_format.py) Python script can be used directly.
 
